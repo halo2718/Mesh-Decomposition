@@ -8,7 +8,7 @@ class Mesh:
 
     def __init__(self, src, convex_eta=0.3, delta=0.5) -> None:
         self.src = src
-        self.mesh = trimesh.load_mesh("./assets/bunny.ply")
+        self.mesh = trimesh.load_mesh("./assets/check.ply")
         
         self.verts = self.mesh.vertices
         self.norms = self.mesh.face_normals
@@ -92,6 +92,7 @@ class Mesh:
             homo_coord = np.array([center_b[0], center_b[1], center_b[2], 1.0]) 
             center_b_rot = np.dot(rot, homo_coord)[:3]
             geodesic_dist = np.linalg.norm(center_b_rot - center_a)
+        # print(geodesic_dist)
         return geodesic_dist
 
 if __name__ == '__main__':
