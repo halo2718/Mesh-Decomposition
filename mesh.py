@@ -24,7 +24,6 @@ class Mesh:
 
         self.generate_dual_graph()
 
-        print(self.face_adj_edges)
         
     def generate_dual_graph(self):
         angular_dist_list  = []
@@ -81,7 +80,8 @@ class Mesh:
         plane_b = [edge_coord[0], edge_coord[1], unsh_coord[1]]
         center_a = sum(plane_a) / len(plane_a)
         center_b = sum(plane_b) / len(plane_b)
-        
+        print("center")
+        print(center_b)
 
 
 
