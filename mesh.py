@@ -60,6 +60,14 @@ class Mesh:
             dual_graph.append(cur_connection)
         return dual_graph
 
+    def calc_angular_dist(self):
+        pass
+
+    def calc_geodesic_dist(self):
+        pass
+
+    def get_weight(self):
+
 
 if __name__ == '__main__':
     mesh = Mesh("./assets/bunny.ply")
