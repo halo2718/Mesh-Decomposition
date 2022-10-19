@@ -1,5 +1,6 @@
 import numpy as np
 import trimesh
+from scipy.sparse import csr_matrix
 
 src = "./assets/elephav.ply"
 
@@ -7,13 +8,11 @@ class Mesh:
 
     def __init__(self, src, convex_eta=0.3, delta=0.5) -> None:
         self.src = src
-        self.mesh = trimesh.load_mesh("./assets/test.ply")
+        self.mesh = trimesh.load_mesh("./assets/bunny.ply")
         
         self.verts = self.mesh.vertices
         self.norms = self.mesh.face_normals
         self.faces = self.mesh.faces
-        
-        print(self.faces)
 
         self.face_adj_pairs = self.mesh.face_adjacency
         self.face_adj_conve = self.mesh.face_adjacency_convex
@@ -33,13 +32,21 @@ class Mesh:
         for idx, (face_idx_a, face_idx_b) in enumerate(self.face_adj_pairs):
             angular_dist = self.calc_angular_dist(idx, face_idx_a, face_idx_b)
             angular_dist_list.append(angular_dist)
-            pass
+            geodesic_dist = self.calc_geodesic_dist(idx)
+            geodesic_dist_list.append(geodesic_dist)
+        self.angular_dist = np.array(angular_dist_list)
+        self.geodesic_dist = np.array(geodesic_dist_list)
+        row = [x[0] for x in self.face_adj_pairs]
+        col = [x[1] for x in self.face_adj_pairs]
+        weight = self.delta * (self.geodesic_dist / self.geodesic_dist.mean()) + (1.0 - self.delta) * (self.angular_dist / self.angular_dist.mean()) 
+        weight_mat = csr_matrix((weight, (row, col)), shape=(self.dual_graph_size, self.dual_graph_size))
+        print(weight_mat)
+        return weight_mat
 
     def calc_angular_dist(self, idx, face_idx_a, face_idx_b):
         norm_a, norm_b = self.norms[face_idx_a], self.norms[face_idx_b]
         convex         = self.face_adj_conve[idx]
-        # Note that the TRIMESH has already forced the length of normals to be 1.
-        angular_dist = self.eta * (1.0 - np.dot(norm_a, norm_b)) if convex else 1.0 - np.dot(norm_a, norm_b)
+        angular_dist = self.convex_eta * (1.0 - np.dot(norm_a, norm_b)) if convex else 1.0 - np.dot(norm_a, norm_b)
         return angular_dist
 
     def calc_geodesic_dist(self, idx):
