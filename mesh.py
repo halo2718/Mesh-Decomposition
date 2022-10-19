@@ -67,7 +67,7 @@ class Mesh:
         pass
 
     def get_weight(self):
-
+        pass
 
 if __name__ == '__main__':
     mesh = Mesh("./assets/bunny.ply")
