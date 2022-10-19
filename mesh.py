@@ -7,11 +7,13 @@ class Mesh:
 
     def __init__(self, src, convex_eta=0.3, delta=0.5) -> None:
         self.src = src
-        self.mesh = trimesh.load_mesh("./assets/bunny.ply")
+        self.mesh = trimesh.load_mesh("./assets/test.ply")
         
         self.verts = self.mesh.vertices
         self.norms = self.mesh.face_normals
         self.faces = self.mesh.faces
+        
+        print(self.faces)
 
         self.face_adj_pairs = self.mesh.face_adjacency
         self.face_adj_conve = self.mesh.face_adjacency_convex
@@ -29,13 +31,8 @@ class Mesh:
         angular_dist_list  = []
         geodesic_dist_list = []
         for idx, (face_idx_a, face_idx_b) in enumerate(self.face_adj_pairs):
-            # angular_dist = self.calc_angular_dist(idx, face_idx_a, face_idx_b)
-            # angular_dist_list.append(angular_dist)
-            if idx < 50:
-                geodesic_dist = self.calc_geodesic_dist(idx)
-            '''
-            TODO
-            '''
+            angular_dist = self.calc_angular_dist(idx, face_idx_a, face_idx_b)
+            angular_dist_list.append(angular_dist)
             pass
 
     def calc_angular_dist(self, idx, face_idx_a, face_idx_b):
@@ -56,7 +53,7 @@ class Mesh:
         edge_a = unsh_coord[0] - edge_coord[1]
         edge_b = unsh_coord[1] - edge_coord[1]
         norm_a, norm_b = self.norms[self.face_adj_pairs[idx]]
-        convex = np.dot(norm_a, edge_b) > 0
+        convex = np.dot(norm_a, edge_b) < 0
         angle = np.arccos(np.dot(norm_a, norm_b))
         angle = angle if convex else -angle
         dir_a = np.cross(axis, edge_a)
@@ -80,13 +77,15 @@ class Mesh:
         plane_b = [edge_coord[0], edge_coord[1], unsh_coord[1]]
         center_a = sum(plane_a) / len(plane_a)
         center_b = sum(plane_b) / len(plane_b)
-        print("center")
-        print(center_b)
-
-
-
-        
-        pass
+        if plane_to_rotate == 0:
+            homo_coord = np.array([center_a[0], center_a[1], center_a[2], 1.0]) 
+            center_a_rot = np.dot(rot, homo_coord)[:3]
+            geodesic_dist = np.linalg.norm(center_a_rot - center_b)
+        else:
+            homo_coord = np.array([center_b[0], center_b[1], center_b[2], 1.0]) 
+            center_b_rot = np.dot(rot, homo_coord)[:3]
+            geodesic_dist = np.linalg.norm(center_b_rot - center_a)
+        return geodesic_dist
 
 if __name__ == '__main__':
     mesh = Mesh("./assets/bunny.ply")
